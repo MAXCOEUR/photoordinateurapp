@@ -22,6 +22,7 @@ class ProgressDialogState extends State<ProgressDialog> {
       totalPhotos = newtotalPhotos;
       state = 1;
     });
+    setSyncedPhotos(0);
   }
 
   void setSyncedPhotos(int newSyncedPhotos) {

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photoordinateurapp/ScannedInfo.dart';
 import 'DeviceInfoHelper.dart'; // en haut
@@ -9,8 +8,8 @@ import 'DeviceInfoHelper.dart'; // en haut
 class PhotoSyncService {
 
   static Future<void> requestPermission() async {
-    PermissionStatus status = await Permission.photos.request();
-    if (status.isGranted) {
+    final PermissionState ps = await PhotoManager.requestPermissionExtend();
+    if (ps.isAuth) {
       // Permission granted, you can access photos and media files
     } else {
       throw Exception("Permission non accordée pour accéder aux photos.");
