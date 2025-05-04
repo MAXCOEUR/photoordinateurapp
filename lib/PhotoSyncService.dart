@@ -18,7 +18,7 @@ class PhotoSyncService {
 
   static Future<List<AssetEntity>> getPhotosBetweenDates(
       DateTime startDate, DateTime endDate) async {
-
+    endDate = endDate.add(Duration(days: 1));
     await requestPermission();
 
     // Obtenir tous les albums
@@ -33,11 +33,12 @@ class PhotoSyncService {
     );
 
     // Filtrer selon les dates
-    return allAssets.where((asset) {
+    List<AssetEntity> test =  allAssets.where((asset) {
       final date = asset.createDateTime;
-      return date.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
-          date.isBefore(endDate.add(const Duration(seconds: 1)));
+      return !date.isBefore(startDate) && !date.isAfter(endDate);
     }).toList();
+
+    return test;
   }
 
   // Envoie une seule photo
