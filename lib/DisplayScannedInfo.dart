@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'ScannedInfo.dart';
 import 'PhotoSyncService.dart';
-import 'ProgressDialog.dart';  // Assure-toi d'importer le widget ProgressDialog
+import 'ProgressDialog.dart';
+import 'constante.dart';  // Assure-toi d'importer le widget ProgressDialog
 
 class DisplayScannedInfo extends StatefulWidget {
   final ScannedInfo scannedInfo;
@@ -46,7 +47,7 @@ class _DisplayScannedInfoState extends State<DisplayScannedInfo> {
   }
 
   Future<void> _pickDatesAndSync(BuildContext context) async {
-    try{
+    try {
       final DateTimeRange? range = await showDateRangePicker(
         context: context,
         firstDate: DateTime(2000),
@@ -54,7 +55,6 @@ class _DisplayScannedInfoState extends State<DisplayScannedInfo> {
       );
 
       if (range != null) {
-
         // Ouvrir la popup de progression
         WakelockPlus.enable();
         _showProgressDialog(context);
@@ -86,7 +86,7 @@ class _DisplayScannedInfoState extends State<DisplayScannedInfo> {
       }
       WakelockPlus.disable();
       widget.onSync();
-    }catch(e){
+    } catch (e) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -97,34 +97,60 @@ class _DisplayScannedInfoState extends State<DisplayScannedInfo> {
               onPressed: () {
                 Navigator.of(context).pop();
                 progressDialogKey.currentState?.close();
-                },
+              },
               child: Text('OK'),
             ),
           ],
         ),
       );
     }
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text('IP: ${widget.scannedInfo.ip}'),
-        Text('Port: ${widget.scannedInfo.port}'),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: widget.onRescan,
-          child: const Text('Re-scanner'),
-        ),
-        const SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: () => _pickDatesAndSync(context),
-          child: const Text('Synchroniser les photos'),
-        ),
-      ],
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Card(
+            color: Constants.cardColor,
+            elevation: 5,
+            margin: EdgeInsets.symmetric(vertical: 10),
+            child: Padding(
+              padding: const EdgeInsets.all(15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('IP: ${widget.scannedInfo.ip}', style: TextStyle(fontSize: 20, color: Constants.textColor)),
+                  SizedBox(height: 10),
+                  Text('Port: ${widget.scannedInfo.port}', style: TextStyle(fontSize: 20, color: Constants.textColor)),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 30),
+          OutlinedButton.icon(
+            onPressed: widget.onRescan,
+            icon: Icon(Icons.camera_alt, size: 20, color: Constants.buttonColor),
+            label: Text('Re-scanner', style: TextStyle(color: Constants.buttonColor, fontSize: 20)),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: Constants.buttonColor, width: 2),
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 25),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+          SizedBox(height: 15),
+          ElevatedButton.icon(
+            onPressed: () => _pickDatesAndSync(context),
+            icon: Icon(Icons.sync, size: 20),
+            label: Text('Synchroniser les photos', style: TextStyle(fontSize: 20)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Constants.buttonColor,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 25),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ],
     );
   }
 }
