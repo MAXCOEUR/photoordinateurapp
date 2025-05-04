@@ -33,6 +33,10 @@ class ProgressDialogState extends State<ProgressDialog> {
     });
   }
 
+  void close(){
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(

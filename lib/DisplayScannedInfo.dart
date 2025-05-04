@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'ScannedInfo.dart';
 import 'PhotoSyncService.dart';
 import 'ProgressDialog.dart';  // Assure-toi d'importer le widget ProgressDialog
@@ -45,43 +46,65 @@ class _DisplayScannedInfoState extends State<DisplayScannedInfo> {
   }
 
   Future<void> _pickDatesAndSync(BuildContext context) async {
-    final DateTimeRange? range = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
-    );
-
-    if (range != null) {
-
-      // Ouvrir la popup de progression
-      _showProgressDialog(context);
-
-      final photos = await PhotoSyncService.getPhotosBetweenDates(
-        range.start,
-        range.end,
+    try{
+      final DateTimeRange? range = await showDateRangePicker(
+        context: context,
+        firstDate: DateTime(2000),
+        lastDate: DateTime.now(),
       );
 
-      // Debug: Affiche combien de photos ont été trouvées
-      debugPrint('Nombre de photos trouvées : ${photos.length}');
-      int totalPhotos = photos.length;
+      if (range != null) {
 
-      if (dialogContext.mounted) {
-        // Récupérer l'état de ProgressDialog via la clé et mettre à jour la progression
-        progressDialogKey.currentState?.setTotalPhotos(totalPhotos); // Met à jour le nombre de photos synchronisées
-      }
+        // Ouvrir la popup de progression
+        WakelockPlus.enable();
+        _showProgressDialog(context);
 
-      // Synchroniser les photos une par une pour mettre à jour l'avancement
-      for (int i = 0; i < photos.length; i++) {
-        await PhotoSyncService.uploadPhoto(photos[i], widget.scannedInfo);
+        final photos = await PhotoSyncService.getPhotosBetweenDates(
+          range.start,
+          range.end,
+        );
 
-        // Mettez à jour la progression dynamique dans la popup
+        // Debug: Affiche combien de photos ont été trouvées
+        debugPrint('Nombre de photos trouvées : ${photos.length}');
+        int totalPhotos = photos.length;
+
         if (dialogContext.mounted) {
           // Récupérer l'état de ProgressDialog via la clé et mettre à jour la progression
-          progressDialogKey.currentState?.setSyncedPhotos(i + 1); // Met à jour le nombre de photos synchronisées
+          progressDialogKey.currentState?.setTotalPhotos(totalPhotos); // Met à jour le nombre de photos synchronisées
+        }
+
+        // Synchroniser les photos une par une pour mettre à jour l'avancement
+        for (int i = 0; i < photos.length; i++) {
+          await PhotoSyncService.uploadPhoto(photos[i], widget.scannedInfo);
+
+          // Mettez à jour la progression dynamique dans la popup
+          if (dialogContext.mounted) {
+            // Récupérer l'état de ProgressDialog via la clé et mettre à jour la progression
+            progressDialogKey.currentState?.setSyncedPhotos(i + 1); // Met à jour le nombre de photos synchronisées
+          }
         }
       }
+      WakelockPlus.disable();
+      widget.onSync();
+    }catch(e){
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Erreur'),
+          content: Text('Une erreur est survenue : $e'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                progressDialogKey.currentState?.close();
+                },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
     }
-    widget.onSync();
+
   }
 
   @override
