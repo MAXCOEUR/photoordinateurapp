@@ -1,6 +1,6 @@
 class ScannedInfo {
   final String ip;
-  final int port;
+  final int? port;
 
   ScannedInfo({
     required this.ip,

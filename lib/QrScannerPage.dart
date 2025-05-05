@@ -29,6 +29,13 @@ class _QrScannerPageState extends State<QrScannerPage> {
     final ip = ipController.text.trim();
     final port = int.tryParse(portController.text);
 
+
+
+    // Si l'IP et le port sont valides, on appelle la méthode onScanned
+    verifyScannedInfo(ScannedInfo(ip: ip, port: port));
+  }
+
+  void verifyScannedInfo(ScannedInfo scannedInfo) {
     // Expression régulière pour valider une adresse IPv4
     final RegExp ipRegex = RegExp(
         r'^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.('
@@ -38,22 +45,21 @@ class _QrScannerPageState extends State<QrScannerPage> {
     );
 
     // Vérification de l'IP et du port
-    if (ip.isEmpty || !ipRegex.hasMatch(ip)) {
+    if (scannedInfo.ip.isEmpty || !ipRegex.hasMatch(scannedInfo.ip)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Adresse IP invalide. Veuillez entrer une adresse IPv4 correcte.')),
       );
       return;
     }
 
-    if (port == null || port < 1 || port > 65535) {
+    if (scannedInfo.port == null || scannedInfo.port! < 1 || scannedInfo.port! > 65535) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Port invalide. Veuillez entrer un port valide (1-65535).')),
       );
       return;
     }
 
-    // Si l'IP et le port sont valides, on appelle la méthode onScanned
-    widget.onScanned(ScannedInfo(ip: ip, port: port));
+    widget.onScanned(scannedInfo);
   }
 
   @override
@@ -135,7 +141,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
                 debugPrint('QR Code détecté: $code');
                 final jsonData = jsonDecode(code);
                 ScannedInfo info = ScannedInfo.fromJson(jsonData);
-                widget.onScanned(info);
+                verifyScannedInfo(info);
               }
             },
           ),

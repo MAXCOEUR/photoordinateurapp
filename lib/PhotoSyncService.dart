@@ -78,11 +78,19 @@ class PhotoSyncService {
     }
   }
 
+  // Envoie un test
+  static Future<bool> testConnexion(ScannedInfo info) async {
+    final uri = Uri.parse('http://${info.ip}:${info.port}/test/');
 
-  // Envoie toutes les photos
-  static Future<void> uploadAllPhotos(List<AssetEntity> photos, ScannedInfo info) async {
-    for (final photo in photos) {
-      await uploadPhoto(photo, info);
+    try {
+      final response = await http
+          .get(uri)
+          .timeout(const Duration(seconds: 5)); // Timeout ajouté ici
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Erreur de connexion : $e");
+      return false;
     }
   }
+
 }
